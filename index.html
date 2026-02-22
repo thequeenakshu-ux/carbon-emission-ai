@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Carbon Emission Control System</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f7f9;
+            margin: 0;
+            padding: 20px;
+        }
+
+        h1 {
+            text-align: center;
+            color: #2c3e50;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 20px;
+        }
+
+        .card {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        input {
+            padding: 8px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        button {
+            padding: 10px;
+            margin-top: 10px;
+            width: 100%;
+            background: #27ae60;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        button:hover {
+            background: #219150;
+        }
+
+        .alert {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+
+        .normal {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .warning {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th, td {
+            padding: 8px;
+            border: 1px solid #ccc;
+            text-align: center;
+        }
+
+        th {
+            background: #2c3e50;
+            color: white;
+        }
+    </style>
+</head>
+<body>
+
+<h1>🌍 Carbon Emission Control Dashboard</h1>
+
+<div class="container">
+
+    <div class="card">
+        <h3>Emission Calculator</h3>
+        <label>Fuel Used (Liters):</label>
+        <input type="number" id="fuelInput" placeholder="Enter fuel used">
+        <button onclick="calculateEmission()">Calculate Emission</button>
+
+        <div id="result"></div>
+    </div>
+
+    <div class="card">
+        <h3>Emission Trend</h3>
+        <canvas id="emissionChart"></canvas>
+    </div>
+
+</div>
+
+<div class="card">
+    <h3>Emission Log</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Time</th>
+                <th>Fuel (L)</th>
+                <th>Emission (tons)</th>
+                <th>Status</th>
+            </tr>
+        </thead>
+        <tbody id="logTable"></tbody>
+    </table>
+</div>
+
+<script>
+    const EMISSION_THRESHOLD = 50; 
+    const emissionFactor = 2.68; // kg CO2 per liter
+    let emissionData = [];
+    let labels = [];
+
+    const ctx = document.getElementById('emissionChart').getContext('2d');
+    const chart = new Chart(ctx, {
+        type: 'line',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: 'CO2 Emission (tons)',
+                data: emissionData,
+                borderColor: 'red',
+                fill: false
+            }]
+        }
+    });
+
+    function calculateEmission() {
+        let fuel = document.getElementById("fuelInput").value;
+        if (fuel === "") return;
+
+        let emission = (fuel * emissionFactor) / 1000; 
+        emission = emission.toFixed(2);
+
+        let status = "";
+        let statusClass = "";
+
+        if (emission > EMISSION_THRESHOLD) {
+            status = "⚠ High Emission - Reduce Production!";
+            statusClass = "warning";
+        } else {
+            status = "✅ Normal Operation";
+            statusClass = "normal";
+        }
+
+        document.getElementById("result").innerHTML =
+            `<div class="alert ${statusClass}">
+                Emission: ${emission} tons <br> ${status}
+            </div>`;
+
+        let time = new Date().toLocaleTimeString();
+
+        emissionData.push(emission);
+        labels.push(time);
+        chart.update();
+
+        let row = `<tr>
+                    <td>${time}</td>
+                    <td>${fuel}</td>
+                    <td>${emission}</td>
+                    <td>${status}</td>
+                   </tr>`;
+
+        document.getElementById("logTable").innerHTML += row;
+    }
+</script>
+
+</body>
+</html>
